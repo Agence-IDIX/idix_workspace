@@ -1,0 +1,211 @@
+<?php
+
+/**
+ * @file
+ * Contains idix_workspace.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+
+define('IDIX_BO_THEME', 'idix_admin');
+
+/**
+ * Implements hook_help().
+ */
+function idix_workspace_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the idix_publish module.
+    case 'help.page.idix_workspace':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Manage administration theme switch') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+function idix_workspace_theme() {
+  return [
+    'media_edit_form' => [
+      'render element' => 'form',
+    ]
+  ];
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function idix_workspace_menu_local_tasks_alter(&$data, $route_name) {
+  if (\Drupal::service('theme.manager')->getActiveTheme()->getName() == IDIX_BO_THEME) {
+    // Remove tabs on /admin/content/poll
+    if ($route_name == 'poll.poll_list') {
+      $data = NULL;
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_form_display_alter().
+ */
+function idix_workspace_entity_form_display_alter(\Drupal\Core\Entity\Display\EntityFormDisplayInterface &$form_display, array $context) {
+  if (\Drupal::service('theme.manager')->getActiveTheme()->getName() == IDIX_BO_THEME) {
+    $entity_types_allowed = ['node', 'media', 'taxonomy_term'];
+    if (in_array($context['entity_type'], $entity_types_allowed)) {
+      $form_display_id = $context['entity_type'] . '.' . $context['bundle'] . '.workspace';
+      $form_display_workspace = \Drupal::entityManager()->getStorage('entity_form_display')->load($form_display_id);
+      if ($form_display_workspace) {
+        $form_display = $form_display_workspace;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function idix_workspace_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $form_type = [
+    'media_image_add_form',
+    'node_image_edit_form'
+  ];
+
+  if(in_array($form_id , $form_type)) {
+    $user = \Drupal::currentUser();
+    if($user->hasPermission('view workspace theme') && $user->id() != 1) {
+      $form['actions']['submit']['#submit'][] = 'idix_workspace_form_redirect';
+    }
+  }
+
+  //page d'accueil
+  $form_type = [
+    'node_frontpage_add_form',
+    'node_frontpage_edit_form'
+  ];
+
+  if(in_array($form_id , $form_type)) {
+    $user = \Drupal::currentUser();
+    if($user->id() != 1) {
+      $form['#after_build'][] = 'idix_workspace_frontpage_form_after_build';
+    }
+  }
+
+  // session
+  $form_type_session = [
+    'node_session_add_form',
+    'node_session_edit_form'
+  ];
+
+  if(in_array($form_id , $form_type_session)) {
+    $user = \Drupal::currentUser();
+    if($user->id() != 1) {
+      $form['#after_build'][] = 'idix_workspace_session_form_after_build';
+    }
+  }
+
+  if ($form_id == 'taxonomy_term_tags_form' && \Drupal::service('theme.manager')->getActiveTheme()->getName() == IDIX_BO_THEME) {
+    $form['relations']['#access'] = FALSE;
+  }
+
+  //pour tous les noeuds
+  if(strstr($form_id , 'node_' ) && \Drupal::service('theme.manager')->getActiveTheme()->getName() == IDIX_BO_THEME) {
+    $form['actions']['submit']['#submit'][] = 'idix_workspace_form_without_redirect';
+  }
+
+}
+
+function idix_workspace_form_without_redirect($form,&$form_state) {
+  $nid = $form_state->getValue('nid');
+  \Drupal::request()->query->remove('destination');
+  $form_state->setRedirect('entity.node.edit_form',[
+    'node' => $nid,
+  ]);
+}
+
+function idix_workspace_form_redirect($form,&$form_state) {
+  \Drupal::request()->query->remove('destination');
+  $form_state->setRedirect('view.images_list.page_1');
+}
+
+function idix_workspace_session_form_after_build($form , &$form_state) {
+  $form['publish_on']['#access'] = FALSE;
+  return $form;
+}
+
+function idix_workspace_frontpage_form_after_build($form , &$form_state) {
+  $form['publish_on']['#access'] = FALSE;
+  return $form;
+}
+
+function idix_workspace_field_widget_form_alter(&$element, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
+  $widget = $context['widget'];
+  if ($widget instanceof \Drupal\image_widget_crop\Plugin\Field\FieldWidget\ImageCropWidget) {
+    $element['#process'][] = '_idix_workspace_image_crop_widget_process';
+  }
+  if ($widget instanceof \Drupal\image\Plugin\Field\FieldWidget\ImageWidget) {
+    $element['#process'][] = '_idix_workspace_image_widget_process';
+  }
+  if ($widget instanceof \Drupal\entity_browser\Plugin\Field\FieldWidget\EntityReferenceBrowserWidget) {
+    $element['#process'][] = '_idix_workspace_entity_reference_browser_widget_process';
+  }
+  if ($widget instanceof \Drupal\Core\field\Plugin\Field\FieldWidget\BooleanCheckBoxWidget && $element['#title'] == 'Published') {
+    $element['value']['#title'] = new \Drupal\Core\StringTranslation\TranslatableMarkup('Published');
+  }
+}
+
+/**
+ * Personnalisation du widget de crop d'une image
+ */
+function _idix_workspace_image_crop_widget_process ($element, \Drupal\Core\Form\FormStateInterface $form_state, $form) {
+  $file_description = $element['#description'];
+  if (is_object($file_description) && method_exists($file_description, '__toString')) {
+    $element['#description'] = str_replace('<br />', ' ', $file_description->__toString());
+  }
+
+  $element['image_crop']['#weight'] = 0;
+  $element['remove_button']['#weight'] = 1;
+  $element['alt']['#weight'] = 2;
+
+  $element['alt']['#description'] = "Brève description de l'image utilisée par les lecteurs d'écran et affichée lorsque l'image n'est pas chargée. Ceci est important pour l'accessibilité.";
+
+  $element['remove_button']['#value'] = 'Supprimer le fichier';
+  $element['remove_button']['#attributes']['class'] = ['mt-2', 'mb-2'];
+
+  return $element;
+}
+
+/**
+ * Personnalisation du widget d'image
+ */
+function _idix_workspace_image_widget_process($element, \Drupal\Core\Form\FormStateInterface $form_state, $form) {
+  $file_description = $element['#description'];
+  if (is_object($file_description) && method_exists($file_description, '__toString')) {
+    $element['#description'] = str_replace('<br />', ' ', $file_description->__toString());
+  }
+  return $element;
+}
+
+/**
+ * Personnalisation du widget browser entity reference
+ */
+function _idix_workspace_entity_reference_browser_widget_process ($element, \Drupal\Core\Form\FormStateInterface $form_state, $form) {
+  foreach ($element['current']['items'] as &$item) {
+    $item['remove_button']['#value'] = 'Retirer';
+    $item['remove_button']['#weight'] = 1;
+    $item['remove_button']['#attributes']['class'][] = 'btn';
+    $item['remove_button']['#attributes']['class'][] = 'btn-secondary';
+  }
+
+  return $element;
+}
+
+function idix_workspace_inline_entity_form_entity_form_alter(&$entity_form, &$form_state) {
+  // Theming du formulaire de création d'un media
+  // dans une popin d'entity browser
+  if ($entity_form['#entity_type'] == 'media' && \Drupal::service('theme.manager')->getActiveTheme()->getName() == IDIX_BO_THEME) {
+    $entity_form['name']['widget'][0]['value']['#title'] = 'Nom';
+    $entity_form['#theme'] = ['media_edit_form'];
+    $entity_form['#attached']['library'][] = 'idix_admin/media-form';
+  }
+}

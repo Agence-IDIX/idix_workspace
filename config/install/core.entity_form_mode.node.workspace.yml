@@ -1,0 +1,9 @@
+langcode: fr
+status: true
+dependencies:
+  module:
+    - node
+id: node.workspace
+label: Workspace
+targetEntityType: node
+cache: true

@@ -1,0 +1,5 @@
+name: idix_workspace
+type: module
+description: Manage administration theme switch
+core: 8.x
+package: IDIX

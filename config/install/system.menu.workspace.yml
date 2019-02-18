@@ -1,0 +1,12 @@
+langcode: fr
+status: true
+dependencies:
+  module:
+    - idix_workspace
+  enforced:
+    module:
+      - idix_workspace
+id: workspace
+label: Workspace
+description: 'Menu de gestion des contenus du Back office éditeur'
+locked: true

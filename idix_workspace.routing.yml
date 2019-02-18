@@ -1,0 +1,7 @@
+workspace.dashboard:
+  path: 'admin/dashboard'
+  defaults:
+      _controller: '\Drupal\idix_workspace\Controller\WorkspaceDashboard::dashboard_page'
+      _title: 'Mon tableau de bord'
+  requirements:
+    _permission: 'view workspace theme'

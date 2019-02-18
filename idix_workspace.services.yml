@@ -1,0 +1,10 @@
+services:
+  idix_workspace.overrider:
+      class: \Drupal\idix_workspace\Override\ConfigAdminThemeOverride
+      tags:
+        - {name: config.factory.override, priority: 5}
+
+  idix_workspace.route_subscriber:
+    class: Drupal\idix_workspace\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }

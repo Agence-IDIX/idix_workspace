@@ -1,0 +1,5 @@
+systeme.theme:
+  mapping:
+    workspace:
+      type: string
+      label: 'workspace'

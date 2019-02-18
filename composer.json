@@ -1,0 +1,26 @@
+{
+  "name": "idix/idix_workspace",
+  "type": "drupal-custom-module",
+  "description": "Module de gestion du thème d'administration",
+  "keywords": ["Drupal"],
+  "authors": [
+    {
+      "name": "Sylvain Tixier",
+      "email": "sylvain.tixier@idix.fr",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Thierry Langlois",
+      "email": "thierry.langlois@idix.fr",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Nicolas Bugeja",
+      "email": "nicolas.bugeja@idix.fr",
+      "role": "Maintainer"
+    }
+  ],
+  "require": {
+    "drupal/core": "8.*"
+  }
+}

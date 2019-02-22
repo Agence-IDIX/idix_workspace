@@ -109,7 +109,7 @@ function idix_workspace_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
   }
 
   //pour tous les noeuds
-  if(strstr($form_id , 'node_' ) && \Drupal::service('theme.manager')->getActiveTheme()->getName() == IDIX_BO_THEME) {
+  if(strstr($form_id , 'node_' ) && !strstr($form_id, '_delete_form') && \Drupal::service('theme.manager')->getActiveTheme()->getName() == IDIX_BO_THEME) {
     $form['actions']['submit']['#submit'][] = 'idix_workspace_form_without_redirect';
   }
 
@@ -117,10 +117,12 @@ function idix_workspace_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
 
 function idix_workspace_form_without_redirect($form,&$form_state) {
   $nid = $form_state->getValue('nid');
-  \Drupal::request()->query->remove('destination');
-  $form_state->setRedirect('entity.node.edit_form',[
-    'node' => $nid,
-  ]);
+  if(!empty($nid)) {
+    \Drupal::request()->query->remove('destination');
+    $form_state->setRedirect('entity.node.edit_form', [
+      'node' => $nid,
+    ]);
+  }
 }
 
 function idix_workspace_form_redirect($form,&$form_state) {

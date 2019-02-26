@@ -57,18 +57,24 @@ class CardFormatter extends FieldGroupFormatterBase {
     }
 
     $clone = $element;
+
+    $clone['#type'] = 'container';
+    $clone['#attributes'] = [
+      'class' => ['card-body']
+    ];
+    $clone['card_title'] = [
+      '#markup' => '<h2 class="card-title">' . $clone['#title'] . '</h2>',
+      '#weight' => -999,
+    ];
+    unset($clone['#title']);
+
     $element = [
       '#type' => 'container',
       '#attributes' => [
         'class' => ['card']
       ],
-      'body' => [
-        '#type' => 'container',
-        '#attributes' => [
-          'class' => ['card-body']
-        ],
-        'element' => $clone
-      ]
+      '#weight' => $clone['#weight'],
+      'body' => $clone,
     ];
   }
 

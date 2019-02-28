@@ -63,7 +63,7 @@ class CardFormatter extends FieldGroupFormatterBase {
       'class' => ['card-body']
     ];
     $clone['card_title'] = [
-      '#markup' => '<h2 class="card-title">' . $clone['#title'] . '</h2>',
+      '#markup' => '<h4 class="card-title">' . $clone['#title'] . '</h4>',
       '#weight' => -999,
     ];
     unset($clone['#title']);

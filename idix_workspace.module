@@ -51,7 +51,7 @@ function idix_workspace_menu_local_tasks_alter(&$data, $route_name) {
  */
 function idix_workspace_entity_form_display_alter(\Drupal\Core\Entity\Display\EntityFormDisplayInterface &$form_display, array $context) {
   if (\Drupal::service('theme.manager')->getActiveTheme()->getName() == IDIX_BO_THEME) {
-    $entity_types_allowed = ['node', 'media', 'taxonomy_term'];
+    $entity_types_allowed = ['node', 'media', 'taxonomy_term', 'site'];
     if (in_array($context['entity_type'], $entity_types_allowed)) {
       $form_display_id = $context['entity_type'] . '.' . $context['bundle'] . '.workspace';
       $form_display_workspace = \Drupal::entityManager()->getStorage('entity_form_display')->load($form_display_id);

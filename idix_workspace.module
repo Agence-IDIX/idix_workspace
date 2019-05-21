@@ -119,9 +119,10 @@ function idix_workspace_form_without_redirect($form,&$form_state) {
   $nid = $form_state->getValue('nid');
   if(!empty($nid)) {
     \Drupal::request()->query->remove('destination');
-    $form_state->setRedirect('entity.node.edit_form', [
-      'node' => $nid,
-    ]);
+    // On utilise TrustedRedirectResponse pour gérer les redirections entre domaines (pour les mini-sites par exemple)
+    $url = \Drupal\Core\Url::fromRoute('entity.node.edit_form', ['node' => $nid], ['absolute' => true]);
+    $response = new \Drupal\Core\Routing\TrustedRedirectResponse($url->toString());
+    $form_state->setResponse($response);
   }
 }
 

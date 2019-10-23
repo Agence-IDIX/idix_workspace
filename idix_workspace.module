@@ -212,3 +212,29 @@ function idix_workspace_inline_entity_form_entity_form_alter(&$entity_form, &$fo
     $entity_form['#attached']['library'][] = 'idix_admin/media-form';
   }
 }
+
+/**
+ * Implements hook_node_access().
+ */
+function idix_workspace_node_access(\Drupal\node\NodeInterface $node, $op, \Drupal\Core\Session\AccountInterface $account)
+{
+  if($op == 'view'){
+    if($account->hasPermission('view all unpublished content') && $node->access('edit', $account)){
+      return \Drupal\Core\Access\AccessResult::allowed();
+    }
+  }
+  return \Drupal\Core\Access\AccessResult::neutral();
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ */
+function idix_workspace_paragraph_access(\Drupal\paragraphs\Entity\Paragraph $paragraph, $op, \Drupal\Core\Session\AccountInterface $account)
+{
+  if($op == 'view'){
+    if($account->hasPermission('view all unpublished content') && $account->hasPermission('view unpublished paragraphs')){
+      return \Drupal\Core\Access\AccessResult::allowed();
+    }
+  }
+  return \Drupal\Core\Access\AccessResult::neutral();
+}

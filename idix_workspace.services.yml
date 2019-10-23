@@ -8,3 +8,8 @@ services:
     class: Drupal\idix_workspace\Routing\RouteSubscriber
     tags:
       - { name: event_subscriber }
+
+  access_check.view_all_unpublished:
+    class: Drupal\idix_workspace\Access\ViewAllUnpublishedAccessCheck
+    tags:
+    - { name: access_check, applies_to: _node_preview_access }

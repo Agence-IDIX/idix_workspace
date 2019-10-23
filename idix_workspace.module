@@ -219,7 +219,7 @@ function idix_workspace_inline_entity_form_entity_form_alter(&$entity_form, &$fo
 function idix_workspace_node_access(\Drupal\node\NodeInterface $node, $op, \Drupal\Core\Session\AccountInterface $account)
 {
   if($op == 'view'){
-    if($account->hasPermission('view all unpublished content') && $node->access('edit', $account)){
+    if($account->hasPermission('view all unpublished content')){
       return \Drupal\Core\Access\AccessResult::allowed();
     }
   }
